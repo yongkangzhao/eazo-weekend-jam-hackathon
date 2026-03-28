@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { supabase } from "@/lib/supabase";
 
 /* ─── Data ─────────────────────────────────────────────────────────── */
 
@@ -45,16 +46,34 @@ const MOODS = [
 type MoodKey = (typeof MOODS)[number]["key"];
 
 interface Rider {
-  id: number;
+  id: number | string;
   mood: MoodKey;
   offsetX: number;
   offsetY: number;
   duration: number;
   delay: number;
+  isReal?: boolean;
+}
+
+interface ChatMessage {
+  id: string;
+  userId: string;
+  username: string;
+  mood: MoodKey | null;
+  text: string;
+  timestamp: number;
 }
 
 function randomMood(): MoodKey {
   return MOODS[Math.floor(Math.random() * MOODS.length)].key;
+}
+
+function hashCode(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash);
 }
 
 function generateRiders(count: number, startId: number): Rider[] {
@@ -275,27 +294,90 @@ function RoomScreen({
     ? stations.slice(startIdx + 1)
     : stations.slice(0, startIdx).reverse();
 
-  const [riders, setRiders] = useState<Rider[]>(() => generateRiders(25, 0));
+  const userId = useRef(crypto.randomUUID());
+  const username = useRef(`Rider ${Math.floor(Math.random() * 900) + 100}`);
+
+  const [simulatedRiders, setSimulatedRiders] = useState<Rider[]>(() => generateRiders(15, 0));
+  const [realRiders, setRealRiders] = useState<Rider[]>([]);
   const [selectedMood, setSelectedMood] = useState<MoodKey | null>(null);
   const [currentStopIdx, setCurrentStopIdx] = useState(0);
   const [riderFlash, setRiderFlash] = useState(false);
   const [vibeImageUrl, setVibeImageUrl] = useState<string | null>(null);
   const [vibeImageLoading, setVibeImageLoading] = useState(false);
   const [vibeImageError, setVibeImageError] = useState<string | null>(null);
-  const nextId = useRef(25);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatInput, setChatInput] = useState("");
+  const chatEndRef = useRef<HTMLDivElement>(null);
+  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const nextId = useRef(15);
   const boardTime = useRef(
     new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
   );
 
-  const distribution = getDistribution(riders);
+  const allRiders = [...simulatedRiders, ...realRiders];
+  const distribution = getDistribution(allRiders);
+
+  // Supabase Realtime channel for presence + broadcast
+  useEffect(() => {
+    const channelName = `commute:${lineKey}:${direction}`;
+    const channel = supabase.channel(channelName);
+    channelRef.current = channel;
+
+    channel
+      .on("presence", { event: "sync" }, () => {
+        const state = channel.presenceState();
+        const presenceRiders: Rider[] = [];
+        for (const key of Object.keys(state)) {
+          const entries = state[key] as unknown as Array<{ userId: string; mood: MoodKey; username: string }>;
+          for (const entry of entries) {
+            if (entry.userId === userId.current) continue;
+            presenceRiders.push({
+              id: entry.userId,
+              mood: entry.mood,
+              offsetX: Math.abs(hashCode(entry.userId) % 100),
+              offsetY: Math.abs((hashCode(entry.userId) * 31) % 100),
+              duration: 3 + (hashCode(entry.userId) % 4),
+              delay: -(hashCode(entry.userId) % 5),
+              isReal: true,
+            });
+          }
+        }
+        setRealRiders(presenceRiders);
+      })
+      .on("broadcast", { event: "chat" }, ({ payload }) => {
+        const msg = payload as ChatMessage;
+        setChatMessages((prev) => [...prev.slice(-49), msg]);
+      })
+      .subscribe(async (status) => {
+        if (status === "SUBSCRIBED") {
+          // Track initial presence (no mood yet)
+          await channel.track({
+            userId: userId.current,
+            username: username.current,
+            mood: "Chill",
+          });
+        }
+      });
+
+    return () => {
+      channel.untrack();
+      supabase.removeChannel(channel);
+      channelRef.current = null;
+    };
+  }, [lineKey, direction]);
+
+  // Auto-scroll chat
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages]);
 
   // Simulate riders boarding at stops
   useEffect(() => {
     const interval = setInterval(() => {
-      const count = 3 + Math.floor(Math.random() * 3);
+      const count = 2 + Math.floor(Math.random() * 2);
       const newRiders = generateRiders(count, nextId.current);
       nextId.current += count;
-      setRiders((prev) => [...prev, ...newRiders]);
+      setSimulatedRiders((prev) => [...prev, ...newRiders]);
       setCurrentStopIdx((prev) =>
         prev < upcomingStations.length - 1 ? prev + 1 : prev
       );
@@ -308,17 +390,53 @@ function RoomScreen({
   const handleSelectMood = useCallback(
     (mood: MoodKey) => {
       setSelectedMood(mood);
-      setRiders((prev) => {
+      // Update simulated rider 0 to reflect user's mood
+      setSimulatedRiders((prev) => {
         const updated = [...prev];
-        // Replace first rider's mood with user's mood (simulates user being in the pool)
         if (updated.length > 0) {
           updated[0] = { ...updated[0], mood };
         }
         return updated;
       });
+      // Update presence with new mood
+      channelRef.current?.track({
+        userId: userId.current,
+        username: username.current,
+        mood,
+      });
     },
     []
   );
+
+  const handleSendChat = useCallback(() => {
+    const text = chatInput.trim();
+    if (!text || !channelRef.current) return;
+    const msg: ChatMessage = {
+      id: crypto.randomUUID(),
+      userId: userId.current,
+      username: username.current,
+      mood: selectedMood,
+      text,
+      timestamp: Date.now(),
+    };
+    channelRef.current.send({
+      type: "broadcast",
+      event: "chat",
+      payload: msg,
+    });
+    // Add own message locally
+    setChatMessages((prev) => [...prev.slice(-49), msg]);
+    setChatInput("");
+  }, [chatInput, selectedMood]);
+
+  const handleLeave = useCallback(() => {
+    if (channelRef.current) {
+      channelRef.current.untrack();
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
+    }
+    onLeave();
+  }, [onLeave]);
 
   // Fetch vibe image when mood is selected
   const fetchVibeImage = useCallback(async () => {
@@ -326,7 +444,7 @@ function RoomScreen({
     setVibeImageLoading(true);
     setVibeImageError(null);
     try {
-      const dist = getDistribution(riders);
+      const dist = getDistribution(allRiders);
       const res = await fetch("/api/commute-mood/vibe-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -340,7 +458,8 @@ function RoomScreen({
     } finally {
       setVibeImageLoading(false);
     }
-  }, [selectedMood, riders]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedMood]);
 
   useEffect(() => {
     if (selectedMood && !vibeImageUrl && !vibeImageLoading) {
@@ -351,6 +470,11 @@ function RoomScreen({
   }, [selectedMood]);
 
   const destination = isInbound ? stations[stations.length - 1] : stations[0];
+
+  const moodIconForKey = (key: MoodKey | null) => {
+    const m = MOODS.find((mood) => mood.key === key);
+    return m ? m.icon : "";
+  };
 
   return (
     <div className="min-h-screen px-4 py-6" style={{ background: "#F5F5F0" }}>
@@ -368,7 +492,7 @@ function RoomScreen({
                   BART {line.name} &middot; {station} &rarr; {destination}
                 </p>
                 <p className="text-xs mt-0.5" style={{ color: "#6B7280" }}>
-                  Boarded at {boardTime.current}
+                  Boarded at {boardTime.current} &middot; {username.current}
                 </p>
               </div>
             </div>
@@ -385,7 +509,10 @@ function RoomScreen({
                 <path d="M22 21v-2a4 4 0 00-3-3.87" />
                 <path d="M16 3.13a4 4 0 010 7.75" />
               </svg>
-              {riders.length} riders
+              {allRiders.length} riders
+              {realRiders.length > 0 && (
+                <span style={{ color: "#2563EB" }}>({realRiders.length + 1} live)</span>
+              )}
             </div>
           </div>
         </div>
@@ -468,13 +595,73 @@ function RoomScreen({
               </div>
             </div>
 
+            {/* Chat */}
+            <div className="rounded-2xl border overflow-hidden" style={{ background: "#FFFFFF", borderColor: "#E5E7EB" }}>
+              <div className="px-5 pt-5 mb-3 flex items-center justify-between">
+                <p className="text-xs font-medium uppercase tracking-wider" style={{ color: "#6B7280" }}>
+                  Chat
+                </p>
+                <p className="text-[10px]" style={{ color: "#9CA3AF" }}>
+                  Messages vanish when you leave the train
+                </p>
+              </div>
+              <div
+                className="mx-5 mb-3 overflow-y-auto space-y-2"
+                style={{ maxHeight: "200px" }}
+              >
+                {chatMessages.length === 0 && (
+                  <p className="text-xs py-4 text-center" style={{ color: "#9CA3AF" }}>
+                    No messages yet. Say something!
+                  </p>
+                )}
+                {chatMessages.map((msg) => (
+                  <div key={msg.id} className="flex gap-2 text-sm">
+                    <span className="font-medium shrink-0" style={{ color: "#1A1D23" }}>
+                      {msg.username} {moodIconForKey(msg.mood)}
+                    </span>
+                    <span style={{ color: "#374151" }}>{msg.text}</span>
+                  </div>
+                ))}
+                <div ref={chatEndRef} />
+              </div>
+              <div className="flex gap-2 px-5 pb-5">
+                <input
+                  type="text"
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendChat();
+                    }
+                  }}
+                  placeholder="Type a message..."
+                  className="flex-1 rounded-lg border px-3 py-2 text-sm focus:outline-none"
+                  style={{ borderColor: "#E5E7EB", color: "#1A1D23", background: "#FFFFFF" }}
+                  maxLength={200}
+                />
+                <button
+                  onClick={handleSendChat}
+                  disabled={!chatInput.trim()}
+                  className="rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+                  style={{
+                    background: chatInput.trim() ? "#2563EB" : "#E5E7EB",
+                    color: chatInput.trim() ? "#FFFFFF" : "#9CA3AF",
+                    cursor: chatInput.trim() ? "pointer" : "not-allowed",
+                  }}
+                >
+                  Send
+                </button>
+              </div>
+            </div>
+
             {/* Floating Mood Bubbles */}
             <div className="rounded-2xl border overflow-hidden" style={{ background: "#FFFFFF", borderColor: "#E5E7EB" }}>
               <p className="text-xs font-medium uppercase tracking-wider px-5 pt-5 mb-3" style={{ color: "#6B7280" }}>
                 Riders on this train
               </p>
               <div className="relative h-48 mx-5 mb-5 rounded-xl overflow-hidden" style={{ background: "#F9FAFB" }}>
-                {riders.slice(0, 40).map((r) => (
+                {allRiders.slice(0, 40).map((r) => (
                   <MoodBubble key={r.id} rider={r} />
                 ))}
               </div>
@@ -558,7 +745,7 @@ function RoomScreen({
 
         {/* Leave Train */}
         <button
-          onClick={onLeave}
+          onClick={handleLeave}
           className="w-full rounded-xl border py-3 text-sm font-medium transition-colors"
           style={{ borderColor: "#E5E7EB", color: "#6B7280", background: "#FFFFFF" }}
         >
