@@ -1,5 +1,7 @@
 # Eazo Weekend Jam Hackathon
 
+**Live:** [eazo-weekend-jam-hackathon.vercel.app](https://eazo-weekend-jam-hackathon.vercel.app/)
+
 Multimodal AI demo gallery powered by [MiniMax](https://www.minimax.io). Each demo is a standalone page showcasing a different AI capability — text-to-image, text-to-video, text-to-speech, music generation, and more.
 
 ## Quick Start
