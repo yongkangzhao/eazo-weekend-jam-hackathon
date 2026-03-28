@@ -314,27 +314,6 @@ export default function MemoryStreamPage() {
       </div>
 
       <div className="relative z-10 max-w-5xl mx-auto px-4 py-8 md:py-12">
-        {/* Back link */}
-        <a
-          href="/"
-          className="text-sm text-gray-500 hover:text-gray-300 transition-colors inline-flex items-center gap-1.5 mb-8"
-        >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-          Back to Gallery
-        </a>
-
         {/* Header */}
         <div className="text-center mb-10">
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-3">

@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     }
 
     const result = await textToImage(prompt);
-    const imageUrl = result.image_url ?? result.url ?? null;
+    const imageUrl = result?.data?.image_urls?.[0] ?? null;
 
     if (!imageUrl) {
       return NextResponse.json(

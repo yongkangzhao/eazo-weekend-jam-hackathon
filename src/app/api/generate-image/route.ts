@@ -9,7 +9,8 @@ export async function POST(req: NextRequest) {
     }
 
     const result = await textToImage(prompt);
-    return NextResponse.json({ imageUrl: result.image_url ?? result.url ?? null });
+    const imageUrl = result?.data?.image_urls?.[0] ?? null;
+    return NextResponse.json({ imageUrl });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Internal error";
     return NextResponse.json({ error: message }, { status: 500 });
