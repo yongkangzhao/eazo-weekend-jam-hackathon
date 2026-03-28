@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import Link from "next/link";
 
 type Step = "idle" | "script" | "audio" | "done" | "error";
 
@@ -144,12 +145,12 @@ export default function AudioFlow() {
       <div className="max-w-2xl mx-auto px-4 py-10">
 
         {/* Back */}
-        <a
+        <Link
           href="/"
           className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-300 transition-colors mb-10"
         >
           ← Back to Gallery
-        </a>
+        </Link>
 
         {/* Hero */}
         <div className="mb-10">
