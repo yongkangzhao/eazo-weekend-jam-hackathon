@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const MINIMAX_BASE_URL = "https://api.minimax.chat/v1";
+const MINIMAX_BASE_URL = "https://api.minimax.io/v1";
 
 function getHeaders() {
   const apiKey = process.env.MINIMAX_API_KEY;

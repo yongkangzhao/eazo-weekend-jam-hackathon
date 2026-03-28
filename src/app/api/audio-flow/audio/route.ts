@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const MINIMAX_BASE_URL = "https://api.minimax.chat/v1";
+const MINIMAX_BASE_URL = "https://api.minimax.io/v1";
 
 function getHeaders() {
   const apiKey = process.env.MINIMAX_API_KEY;
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
         text: script,
         stream: false,
         voice_setting: {
-          voice_id: "presenter_male",
+          voice_id: "English_expressive_narrator",
           speed: 1.05,
           vol: 1.0,
           pitch: 0,
@@ -45,6 +45,7 @@ export async function POST(req: NextRequest) {
           format: "mp3",
           channel: 1,
         },
+        output_format: "hex",
       }),
     });
 
