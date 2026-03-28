@@ -55,4 +55,13 @@ export const demos: Demo[] = [
     author: "@SelenaChi",
     status: "wip",
   },
+  {
+    slug: "dual-shot",
+    title: "DualShot",
+    description:
+      "Record from both cameras at once — back for content, front for your face — then generate a title and description with AI.",
+    apis: ["chat-completion"],
+    author: "@yongkangzhao",
+    status: "wip",
+  },
 ];
