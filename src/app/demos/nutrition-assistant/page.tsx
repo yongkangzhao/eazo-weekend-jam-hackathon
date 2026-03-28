@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import Link from "next/link";
-
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface FoodItem {
@@ -203,30 +201,25 @@ export default function NutritionAssistantPage() {
     : 0;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100">
-      {/* Back link */}
-      <div className="p-4">
-        <Link
-          href="/"
-          className="text-sm text-gray-400 hover:text-green-400 transition-colors inline-flex items-center gap-1"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          Back to Gallery
-        </Link>
+    <div className="min-h-screen bg-[#0a1a0f] text-gray-100 relative overflow-hidden">
+      {/* Ambient glow */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-emerald-600/10 rounded-full blur-[120px]" />
+        <div className="absolute -bottom-40 right-0 w-[400px] h-[400px] bg-teal-600/8 rounded-full blur-[100px]" />
       </div>
 
-      <div className="max-w-lg mx-auto px-4 pb-12">
+      <div className="relative z-10 max-w-lg mx-auto px-4 py-12 pb-12">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-green-500/10 border border-green-500/20 mb-4">
-            <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6.75 6.75h.75v.75h-.75v-.75zM6.75 16.5h.75v.75h-.75v-.75zM16.5 6.75h.75v.75h-.75v-.75zM13.5 13.5h6v6h-6v-6z" />
-            </svg>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-medium mb-4">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            Powered by MiniMax
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">AI Nutrition Assistant</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">
+            <span className="bg-gradient-to-r from-emerald-300 via-teal-300 to-cyan-300 bg-clip-text text-transparent">
+              Nutrition Assistant
+            </span>
+          </h1>
           <p className="text-gray-400 text-sm">
             Snap a photo of your food for instant calorie and nutrition analysis
           </p>

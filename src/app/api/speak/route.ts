@@ -11,23 +11,21 @@ export async function POST(request: Request) {
 
     const response = await textToSpeech(text);
 
-    // The MiniMax TTS API may return audio in different formats.
-    // Handle both base64 audio data and URL-based responses.
-    if (response?.audio_file) {
-      // Base64 audio data
-      return NextResponse.json({ audio: response.audio_file });
-    }
-
-    if (response?.extra_info?.audio_file) {
-      return NextResponse.json({ audio: response.extra_info.audio_file });
-    }
-
+    // MiniMax TTS returns hex-encoded audio in data.audio
     if (response?.base_resp?.status_code === 0 && response?.data?.audio) {
-      return NextResponse.json({ audio: response.data.audio });
+      // Convert hex string to base64 for the client
+      const hexString = response.data.audio;
+      const bytes = new Uint8Array(
+        hexString.match(/.{1,2}/g)!.map((byte: string) => parseInt(byte, 16))
+      );
+      const base64 = Buffer.from(bytes).toString("base64");
+      return NextResponse.json({ audio: base64 });
     }
 
-    // Return the full response for the client to handle
-    return NextResponse.json(response);
+    return NextResponse.json(
+      { error: "No audio data in API response" },
+      { status: 502 }
+    );
   } catch (error) {
     console.error("TTS error:", error);
     const message =
