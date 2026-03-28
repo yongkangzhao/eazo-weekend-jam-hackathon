@@ -58,6 +58,38 @@ export async function textToVideo(prompt: string) {
   return res.json();
 }
 
+/** Chat completion */
+export async function chatCompletion(
+  messages: { role: string; content: string }[]
+) {
+  const res = await fetch(`${MINIMAX_BASE_URL}/text/chatcompletion_v2`, {
+    method: "POST",
+    headers: getHeaders(),
+    body: JSON.stringify({
+      model: "MiniMax-Text-01",
+      messages,
+    }),
+  });
+  if (!res.ok) throw new Error(`MiniMax API error: ${res.status}`);
+  return res.json();
+}
+
+/** Chat completion with vision support */
+export async function chatCompletionWithVision(
+  messages: { role: string; content: unknown }[]
+) {
+  const res = await fetch(`${MINIMAX_BASE_URL}/text/chatcompletion_v2`, {
+    method: "POST",
+    headers: getHeaders(),
+    body: JSON.stringify({
+      model: "MiniMax-Text-01",
+      messages,
+    }),
+  });
+  if (!res.ok) throw new Error(`MiniMax API error: ${res.status}`);
+  return res.json();
+}
+
 /** Music generation */
 export async function textToMusic(prompt: string) {
   const res = await fetch(`${MINIMAX_BASE_URL}/text/music`, {
