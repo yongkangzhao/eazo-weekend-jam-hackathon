@@ -38,4 +38,13 @@ export const demos: Demo[] = [
     author: "@zefang-liu",
     status: "wip",
   },
+  {
+    slug: "commute-mood",
+    title: "CommuteMood",
+    description:
+      "Join your train. Feel the vibe. An ephemeral mood-sharing experience for transit riders.",
+    apis: ["text-to-image"],
+    author: "@SelenaChi",
+    status: "wip",
+  },
 ];

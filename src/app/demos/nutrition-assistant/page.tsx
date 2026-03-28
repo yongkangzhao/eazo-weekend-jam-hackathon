@@ -234,7 +234,6 @@ export default function NutritionAssistantPage() {
         ) : (
           <div className="relative mb-6">
             <div className="rounded-xl overflow-hidden border border-gray-200">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={imagePreview}
                 alt="Food preview"
