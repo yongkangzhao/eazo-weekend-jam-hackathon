@@ -28,4 +28,31 @@ export const demos: Demo[] = [
     author: "team",
     status: "wip",
   },
+  {
+    slug: "memory-stream",
+    title: "Memory Stream",
+    description:
+      "Reconstruct a flowing memory narrative from a LinkedIn profile — with AI-generated visuals and soundscapes.",
+    apis: ["chat-completion", "text-to-image", "text-to-speech"],
+    author: "@zefang-liu",
+    status: "wip",
+  },
+  {
+    slug: "nutrition-assistant",
+    title: "AI Nutrition Assistant",
+    description:
+      "Snap a photo of your food and get instant calorie estimates, macro breakdowns, and personalized dietary recommendations.",
+    apis: ["chat-completion", "text-to-speech"],
+    author: "@zefang-liu",
+    status: "wip",
+  },
+  {
+    slug: "commute-mood",
+    title: "CommuteMood",
+    description:
+      "Join your train. Feel the vibe. An ephemeral mood-sharing experience for transit riders.",
+    apis: ["text-to-image"],
+    author: "@SelenaChi",
+    status: "wip",
+  },
 ];

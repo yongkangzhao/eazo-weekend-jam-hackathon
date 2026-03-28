@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function GalleryLayout({
   children,
 }: {
@@ -6,9 +8,9 @@ export default function GalleryLayout({
   return (
     <>
       <header className="border-b border-gray-800 px-6 py-4 flex items-center justify-between">
-        <a href="/" className="text-xl font-bold tracking-tight">
+        <Link href="/" className="text-xl font-bold tracking-tight">
           Eazo Weekend Jam
-        </a>
+        </Link>
         <a
           href="https://github.com/yongkangzhao/eazo-weekend-jam-hackathon/issues/new?template=app-idea.yml"
           target="_blank"
