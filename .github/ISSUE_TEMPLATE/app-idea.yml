@@ -1,0 +1,53 @@
+name: "App Idea"
+description: "Propose a new multimodal AI demo app"
+title: "[Idea] "
+labels: ["idea"]
+body:
+  - type: input
+    id: demo_name
+    attributes:
+      label: Demo Name
+      description: "Short name for this demo (used as URL slug, e.g. 'voice-cloner')"
+      placeholder: "text-to-video"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: "What does this demo do? Who is it for?"
+      placeholder: "This demo lets users type a prompt and generates a short video clip using MiniMax's video API..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: apis
+    attributes:
+      label: MiniMax APIs Used
+      description: "Which MiniMax APIs will this demo use?"
+      multiple: true
+      options:
+        - text-to-image
+        - text-to-speech
+        - text-to-video
+        - text-to-music
+        - voice-clone
+        - chat-completion
+        - other
+    validations:
+      required: true
+
+  - type: textarea
+    id: ui_sketch
+    attributes:
+      label: UI Sketch (optional)
+      description: "Describe or paste a rough sketch of what the UI looks like"
+
+  - type: input
+    id: author
+    attributes:
+      label: Your Name / GitHub Handle
+      placeholder: "@yourname"
+    validations:
+      required: true
