@@ -150,8 +150,49 @@ function SetupScreen({
             DualShot
           </h1>
           <p className="mt-2 text-sm" style={{ color: "#6B7280" }}>
-            Record with both cameras. One take, two angles.
+            Record with both cameras at once — your content and your face in one take.
           </p>
+        </div>
+
+        {/* Feature highlights */}
+        <div
+          className="rounded-2xl border p-5 mb-6 space-y-4"
+          style={{ background: "#FFFFFF", borderColor: "#E5E7EB" }}
+        >
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "#FFF1F2" }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E11D48" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M23 7l-7 5 7 5V7z" />
+                <rect x="1" y="5" width="15" height="14" rx="2" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-medium" style={{ color: "#1A1D23" }}>Dual camera recording</p>
+              <p className="text-xs" style={{ color: "#9CA3AF" }}>Back camera captures content, front camera shows your face as a draggable overlay</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "#F0FDF4" }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-medium" style={{ color: "#1A1D23" }}>AI title & description</p>
+              <p className="text-xs" style={{ color: "#9CA3AF" }}>Describe your video, pick tags, and AI generates ready-to-post metadata</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "#EFF6FF" }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-medium" style={{ color: "#1A1D23" }}>One-tap download</p>
+              <p className="text-xs" style={{ color: "#9CA3AF" }}>Save the merged video directly to your device — no account needed</p>
+            </div>
+          </div>
         </div>
 
         {!supported ? (
@@ -296,6 +337,8 @@ function RecordingScreen({
   const [paused, setPaused] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [singleCameraMode, setSingleCameraMode] = useState(!frontStream);
+  const [faceCamHidden, setFaceCamHidden] = useState(false);
+  const hasFrontCamera = !!frontStream;
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Set up video elements and start compositing loop
@@ -346,11 +389,12 @@ function RecordingScreen({
         ctx.drawImage(backVideo, sx, sy, sw, sh, 0, 0, cw, ch);
       }
 
-      // Draw front camera PiP (if available)
+      // Draw front camera PiP (if available and not hidden)
       if (
         frontVideo &&
         frontVideo.readyState >= 2 &&
-        !singleCameraMode
+        !singleCameraMode &&
+        !faceCamHidden
       ) {
         const pipW = Math.round(cw * 0.28);
         const pipH = Math.round(
@@ -403,7 +447,7 @@ function RecordingScreen({
       cancelAnimationFrame(rafRef.current);
       backVideo.removeEventListener("loadedmetadata", handleMetadata);
     };
-  }, [backStream, frontStream, singleCameraMode]);
+  }, [backStream, frontStream, singleCameraMode, faceCamHidden]);
 
   // PiP drag handling
   const handlePointerDown = useCallback(
@@ -460,6 +504,7 @@ function RecordingScreen({
     if (!isDraggingRef.current) return;
     isDraggingRef.current = false;
 
+    // Clamp to canvas bounds — no corner snapping, free positioning
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -471,14 +516,12 @@ function RecordingScreen({
         ((frontVideoRef.current?.videoHeight || 480) /
           (frontVideoRef.current?.videoWidth || 640))
     );
-    const margin = 16;
-    const cx = pipPosRef.current.x + pipW / 2;
-    const cy = pipPosRef.current.y + pipH / 2;
+    const margin = 8;
 
-    // Snap to nearest corner
-    const snapX = cx < cw / 2 ? margin : cw - pipW - margin;
-    const snapY = cy < ch / 2 ? margin : ch - pipH - margin;
-    pipPosRef.current = { x: snapX, y: snapY };
+    pipPosRef.current = {
+      x: Math.max(margin, Math.min(pipPosRef.current.x, cw - pipW - margin)),
+      y: Math.max(margin, Math.min(pipPosRef.current.y, ch - pipH - margin)),
+    };
   }, []);
 
   // Recording controls
@@ -624,7 +667,23 @@ function RecordingScreen({
             {formatTime(elapsed)}
           </span>
         </div>
-        {singleCameraMode && (
+        {hasFrontCamera ? (
+          <button
+            onClick={() => setFaceCamHidden((h) => !h)}
+            className="text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5"
+            style={{
+              background: faceCamHidden ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.25)",
+              color: "#FFFFFF",
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M23 7l-7 5 7 5V7z" />
+              <rect x="1" y="5" width="15" height="14" rx="2" />
+              {faceCamHidden && <line x1="1" y1="1" x2="23" y2="23" />}
+            </svg>
+            {faceCamHidden ? "Show face" : "Hide face"}
+          </button>
+        ) : (
           <span
             className="text-xs px-2 py-1 rounded"
             style={{ background: "rgba(255,255,255,0.15)", color: "#FFFFFF" }}
@@ -632,7 +691,6 @@ function RecordingScreen({
             Single camera
           </span>
         )}
-        {!singleCameraMode && <div style={{ width: 80 }} />}
       </div>
 
       {/* Canvas — fills screen */}
