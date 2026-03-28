@@ -51,7 +51,7 @@ Grew up in Portland, Oregon. Passionate about AI safety, hiking, and film photog
 function ShimmerBlock({ className }: { className?: string }) {
   return (
     <div
-      className={`animate-pulse rounded-xl bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 bg-[length:200%_100%] ${className ?? ""}`}
+      className={`animate-pulse rounded-lg bg-gradient-to-r from-[#E7E5E0] via-[#F0EFEC] to-[#E7E5E0] bg-[length:200%_100%] ${className ?? ""}`}
       style={{
         animation: "shimmer 2s ease-in-out infinite",
       }}
@@ -82,12 +82,12 @@ function PhaseCard({
     >
       {/* Timeline dot */}
       <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex flex-col items-center z-10">
-        <div className="w-4 h-4 rounded-full bg-indigo-500 border-4 border-gray-950 shadow-lg shadow-indigo-500/30" />
+        <div className="w-3 h-3 rounded-full bg-[#C67D4B] border-4 border-[#FAF9F6]" />
       </div>
 
       {/* Image side */}
       <div className={`w-full md:w-[calc(50%-2.5rem)] ${isLeft ? "md:text-right" : "md:text-left"}`}>
-        <div className="relative aspect-[16/10] rounded-xl overflow-hidden border border-gray-800/50 shadow-2xl">
+        <div className="relative aspect-[16/10] rounded-lg overflow-hidden border border-[#E7E5E0] shadow-md">
           {phase.imageLoading ? (
             <ShimmerBlock className="absolute inset-0" />
           ) : phase.imageUrl ? (
@@ -97,28 +97,28 @@ function PhaseCard({
               className="absolute inset-0 w-full h-full object-cover"
             />
           ) : (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-900 text-gray-600 text-sm">
+            <div className="absolute inset-0 flex items-center justify-center bg-[#F0EFEC] text-[#A8A29E] text-sm">
               {phase.imageError ?? "Image unavailable"}
             </div>
           )}
           {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-gray-950/60 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
         </div>
       </div>
 
       {/* Text side */}
       <div className={`w-full md:w-[calc(50%-2.5rem)] ${isLeft ? "" : ""}`}>
         {/* Year badge */}
-        <span className="inline-block px-3 py-1 rounded-full text-xs font-mono font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 mb-3">
+        <span className="inline-block px-3 py-1 rounded-full text-xs font-mono font-medium bg-[#FDF3EC] text-[#9A5C30] border border-[#E7D5C4] mb-3">
           {phase.yearRange}
         </span>
-        <h3 className="text-xl md:text-2xl font-bold text-gray-100 mb-2 leading-tight">
+        <h3 className="text-xl md:text-2xl font-serif font-semibold text-[#2C2420] mb-2 leading-tight">
           {phase.title}
         </h3>
-        <p className="text-gray-400 leading-relaxed text-sm md:text-base">
+        <p className="text-[#7A746E] leading-relaxed text-sm md:text-base">
           {phase.description}
         </p>
-        <p className="mt-2 text-xs text-gray-600 italic">
+        <p className="mt-2 text-xs text-[#A8A29E] italic">
           {phase.audioMood}
         </p>
       </div>
@@ -298,7 +298,7 @@ export default function MemoryStreamPage() {
   const showTimeline = phases.length > 0;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100">
+    <div className="min-h-screen bg-[#FAF9F6] text-[#2C2420]">
       {/* Shimmer keyframes */}
       <style>{`
         @keyframes shimmer {
@@ -307,33 +307,25 @@ export default function MemoryStreamPage() {
         }
       `}</style>
 
-      {/* Ambient background glow */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-900/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-900/10 rounded-full blur-3xl" />
-      </div>
-
-      <div className="relative z-10 max-w-5xl mx-auto px-4 py-8 md:py-12">
+      <div className="max-w-5xl mx-auto px-4 py-8 md:py-12">
         {/* Header */}
         <div className="text-center mb-10">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-3">
-            <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-              Memory Stream
-            </span>
+          <h1 className="text-4xl md:text-5xl font-serif font-semibold tracking-tight text-[#2C2420] mb-3">
+            Memory Stream
           </h1>
-          <p className="text-gray-400 max-w-xl mx-auto text-lg">
-            Paste your LinkedIn profile and watch your life story unfold as a
-            cinematic memory stream — with AI-generated visuals.
+          <p className="text-[#7A746E] max-w-xl mx-auto text-lg leading-relaxed">
+            Paste your LinkedIn profile and see your career journey told as a
+            visual story.
           </p>
         </div>
 
         {/* Input section */}
         {!showTimeline && (
           <div className="max-w-2xl mx-auto">
-            <div className="rounded-2xl border border-gray-800/50 bg-gray-900/50 backdrop-blur-sm p-6 shadow-xl">
+            <div className="rounded-xl border border-[#E7E5E0] bg-white p-6 shadow-sm">
               <label
                 htmlFor="profile-input"
-                className="block text-sm font-medium text-gray-300 mb-2"
+                className="block text-sm font-medium text-[#2C2420] mb-2"
               >
                 LinkedIn Profile Text
               </label>
@@ -343,14 +335,14 @@ export default function MemoryStreamPage() {
                 onChange={(e) => setProfileText(e.target.value)}
                 placeholder={`Paste your LinkedIn profile here...\n\nInclude your name, education, work history, locations, and any other details you'd like to see in your memory stream.`}
                 rows={10}
-                className="w-full rounded-xl border border-gray-700/50 bg-gray-800/50 px-4 py-3 text-gray-100 placeholder-gray-600 focus:border-indigo-500/50 focus:outline-none focus:ring-1 focus:ring-indigo-500/25 resize-none text-sm leading-relaxed"
+                className="w-full rounded-lg border border-[#E7E5E0] bg-[#FAF9F6] px-4 py-3 text-[#2C2420] placeholder-[#A8A29E] focus:border-[#C67D4B] focus:outline-none focus:ring-1 focus:ring-[#C67D4B]/25 resize-none text-sm leading-relaxed"
               />
 
               <div className="flex flex-col sm:flex-row gap-3 mt-4">
                 <button
                   onClick={handleGenerate}
                   disabled={generating || !profileText.trim()}
-                  className="flex-1 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-3 font-semibold text-white shadow-lg shadow-indigo-500/20 hover:from-indigo-500 hover:to-purple-500 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
+                  className="flex-1 rounded-lg bg-[#3D3229] px-6 py-3 font-medium text-white hover:bg-[#524639] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   {generating ? (
                     <span className="flex items-center justify-center gap-2">
@@ -373,23 +365,23 @@ export default function MemoryStreamPage() {
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                         />
                       </svg>
-                      Reconstructing Memories...
+                      Building timeline...
                     </span>
                   ) : (
-                    "Generate Memory Stream"
+                    "Create Timeline"
                   )}
                 </button>
                 <button
                   onClick={handleTryDemo}
                   disabled={generating}
-                  className="rounded-xl border border-gray-700 px-6 py-3 text-sm text-gray-400 hover:text-gray-200 hover:border-gray-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
+                  className="rounded-lg border border-[#E7E5E0] px-6 py-3 text-sm text-[#7A746E] hover:text-[#2C2420] hover:border-[#C67D4B] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   Try Demo Profile
                 </button>
               </div>
             </div>
 
-            <p className="text-center text-xs text-gray-600 mt-4">
+            <p className="text-center text-xs text-[#A8A29E] mt-4">
               Your profile text is processed by AI to create a fictional
               narrative. No data is stored.
             </p>
@@ -401,12 +393,12 @@ export default function MemoryStreamPage() {
 
         {/* Error state */}
         {error && (
-          <div className="max-w-2xl mx-auto mt-6 rounded-xl bg-red-900/20 border border-red-800/50 p-4 text-red-300 text-sm">
+          <div className="max-w-2xl mx-auto mt-6 rounded-lg bg-[#FEF2F2] border border-red-200 p-4 text-red-700 text-sm">
             <p className="font-medium mb-1">Generation failed</p>
-            <p className="text-red-400">{error}</p>
+            <p className="text-red-700">{error}</p>
             <button
               onClick={() => setError(null)}
-              className="mt-2 text-xs text-red-500 hover:text-red-300 underline"
+              className="mt-2 text-xs text-red-700 hover:text-red-900 underline"
             >
               Dismiss
             </button>
@@ -419,10 +411,10 @@ export default function MemoryStreamPage() {
             {/* Person name header */}
             {personName && (
               <div className="text-center mb-12 animate-fade-in">
-                <p className="text-sm text-indigo-400 uppercase tracking-widest mb-2">
+                <p className="text-sm text-[#9A5C30] uppercase tracking-widest mb-2 font-medium">
                   The Memory Stream of
                 </p>
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-100">
+                <h2 className="text-3xl md:text-4xl font-serif font-semibold text-[#2C2420]">
                   {personName}
                 </h2>
               </div>
@@ -436,7 +428,7 @@ export default function MemoryStreamPage() {
                   setPersonName(null);
                   setVisiblePhases(new Set());
                 }}
-                className="text-sm text-gray-500 hover:text-gray-300 underline transition-colors"
+                className="text-sm text-[#A8A29E] hover:text-[#2C2420] underline transition-colors"
               >
                 Start over with a new profile
               </button>
@@ -444,7 +436,7 @@ export default function MemoryStreamPage() {
 
             {/* Vertical timeline line (desktop only) */}
             <div className="relative">
-              <div className="hidden md:block absolute left-1/2 -translate-x-px top-0 bottom-0 w-0.5 bg-gradient-to-b from-indigo-500/50 via-purple-500/30 to-transparent" />
+              <div className="hidden md:block absolute left-1/2 -translate-x-px top-0 bottom-0 w-px bg-[#D6D0C8]" />
 
               {/* Phase cards */}
               <div className="space-y-16 md:space-y-24">
@@ -462,8 +454,8 @@ export default function MemoryStreamPage() {
               {!generating && (
                 <div className="flex justify-center mt-16">
                   <div className="text-center">
-                    <div className="w-3 h-3 rounded-full bg-purple-500/50 mx-auto mb-3" />
-                    <p className="text-sm text-gray-500 italic">
+                    <div className="w-2 h-2 rounded-full bg-[#D6D0C8] mx-auto mb-3" />
+                    <p className="text-sm text-[#A8A29E] italic">
                       The stream continues...
                     </p>
                   </div>

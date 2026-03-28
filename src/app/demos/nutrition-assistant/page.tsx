@@ -70,10 +70,10 @@ function compressImage(file: File, maxSize = 1024, quality = 0.8): Promise<strin
 
 // ─── Health goal options ─────────────────────────────────────────────────────
 
-const HEALTH_GOALS: { value: HealthGoal; label: string; icon: string }[] = [
-  { value: "weight-loss", label: "Weight Loss", icon: "🔥" },
-  { value: "muscle-gain", label: "Muscle Gain", icon: "💪" },
-  { value: "maintenance", label: "Maintenance", icon: "⚖️" },
+const HEALTH_GOALS: { value: HealthGoal; label: string }[] = [
+  { value: "weight-loss", label: "Weight Loss" },
+  { value: "muscle-gain", label: "Muscle Gain" },
+  { value: "maintenance", label: "Maintenance" },
 ];
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -201,27 +201,15 @@ export default function NutritionAssistantPage() {
     : 0;
 
   return (
-    <div className="min-h-screen bg-[#0a1a0f] text-gray-100 relative overflow-hidden">
-      {/* Ambient glow */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-emerald-600/10 rounded-full blur-[120px]" />
-        <div className="absolute -bottom-40 right-0 w-[400px] h-[400px] bg-teal-600/8 rounded-full blur-[100px]" />
-      </div>
-
-      <div className="relative z-10 max-w-lg mx-auto px-4 py-12 pb-12">
+    <div className="min-h-screen bg-[#F7F8FA] text-[#1C1E21]">
+      <div className="max-w-lg mx-auto px-4 py-12">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-medium mb-4">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            Powered by MiniMax
-          </div>
-          <h1 className="text-3xl font-bold text-white mb-2">
-            <span className="bg-gradient-to-r from-emerald-300 via-teal-300 to-cyan-300 bg-clip-text text-transparent">
-              Nutrition Assistant
-            </span>
+          <h1 className="text-2xl font-semibold text-[#1C1E21] mb-1">
+            Nutrition Assistant
           </h1>
-          <p className="text-gray-400 text-sm">
-            Snap a photo of your food for instant calorie and nutrition analysis
+          <p className="text-gray-500 text-sm">
+            Upload a photo of your meal to get nutritional info
           </p>
         </div>
 
@@ -230,22 +218,22 @@ export default function NutritionAssistantPage() {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="w-full aspect-[4/3] rounded-2xl border-2 border-dashed border-gray-700 hover:border-green-500/50 bg-gray-900/50 hover:bg-gray-900 transition-all flex flex-col items-center justify-center gap-3 cursor-pointer mb-6"
+            className="w-full aspect-[4/3] rounded-xl border-2 border-dashed border-gray-300 hover:border-[#34A853] bg-white hover:bg-[#F0FAF0] transition-all flex flex-col items-center justify-center gap-3 cursor-pointer mb-6"
           >
-            <div className="w-14 h-14 rounded-full bg-green-500/10 flex items-center justify-center">
-              <svg className="w-7 h-7 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-14 h-14 rounded-full bg-[#F0FAF0] flex items-center justify-center">
+              <svg className="w-7 h-7 text-[#34A853]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z" />
               </svg>
             </div>
             <div className="text-center">
-              <p className="text-sm font-medium text-gray-300">Take a photo or upload an image</p>
-              <p className="text-xs text-gray-500 mt-1">Tap to open camera or choose file</p>
+              <p className="text-sm font-medium text-[#1C1E21]">Take a photo or upload an image</p>
+              <p className="text-xs text-gray-400 mt-1">Tap to open camera or choose file</p>
             </div>
           </button>
         ) : (
           <div className="relative mb-6">
-            <div className="rounded-2xl overflow-hidden border border-gray-800">
+            <div className="rounded-xl overflow-hidden border border-gray-200">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={imagePreview}
@@ -256,7 +244,7 @@ export default function NutritionAssistantPage() {
             <button
               type="button"
               onClick={handleReset}
-              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-gray-900/80 backdrop-blur flex items-center justify-center text-gray-400 hover:text-white transition-colors"
+              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 shadow-sm flex items-center justify-center text-gray-500 hover:text-[#1C1E21] transition-colors"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -277,7 +265,7 @@ export default function NutritionAssistantPage() {
 
         {/* Health goal selector */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-400 mb-3">
+          <label className="block text-sm font-medium text-gray-600 mb-3">
             Your Health Goal
           </label>
           <div className="flex gap-2">
@@ -288,11 +276,10 @@ export default function NutritionAssistantPage() {
                 onClick={() => setHealthGoal(goal.value)}
                 className={`flex-1 py-2.5 px-3 rounded-xl text-sm font-medium transition-all ${
                   healthGoal === goal.value
-                    ? "bg-green-500/20 text-green-400 border border-green-500/40"
-                    : "bg-gray-900 text-gray-400 border border-gray-800 hover:border-gray-700"
+                    ? "bg-[#F0FAF0] text-[#34A853] border border-[#34A853]"
+                    : "bg-white text-gray-600 border border-gray-200 hover:border-gray-400"
                 }`}
               >
-                <span className="block text-lg mb-0.5">{goal.icon}</span>
                 {goal.label}
               </button>
             ))}
@@ -304,7 +291,7 @@ export default function NutritionAssistantPage() {
           type="button"
           onClick={handleAnalyze}
           disabled={!imageBase64 || loading}
-          className="w-full py-3.5 rounded-xl font-semibold text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed bg-green-500 hover:bg-green-400 text-gray-950 mb-6"
+          className="w-full py-3.5 rounded-lg font-medium text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-[#34A853] hover:bg-[#2D9249] text-white mb-6"
         >
           {loading ? (
             <span className="inline-flex items-center gap-2">
@@ -321,7 +308,7 @@ export default function NutritionAssistantPage() {
 
         {/* Error message */}
         {error && (
-          <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+          <div className="mb-6 p-4 rounded-lg bg-[#FEF2F2] border border-red-200 text-red-700 text-sm">
             {error}
           </div>
         )}
@@ -329,9 +316,9 @@ export default function NutritionAssistantPage() {
         {/* Loading skeleton */}
         {loading && (
           <div className="space-y-4 animate-pulse">
-            <div className="h-24 rounded-xl bg-gray-900" />
-            <div className="h-32 rounded-xl bg-gray-900" />
-            <div className="h-20 rounded-xl bg-gray-900" />
+            <div className="h-24 rounded-lg bg-gray-100" />
+            <div className="h-32 rounded-lg bg-gray-100" />
+            <div className="h-20 rounded-lg bg-gray-100" />
           </div>
         )}
 
@@ -339,53 +326,53 @@ export default function NutritionAssistantPage() {
         {result && !loading && (
           <div className="space-y-4">
             {/* Foods detected */}
-            <div className="rounded-xl bg-gray-900 border border-gray-800 p-4">
-              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
+            <div className="rounded-lg bg-white border border-gray-200 p-4 shadow-sm">
+              <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
                 Foods Detected
               </h2>
               <ul className="space-y-2">
                 {result.foods.map((food, i) => (
                   <li key={i} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-green-400" />
-                      <span className="text-sm text-gray-200">{food.name}</span>
+                      <span className="w-2 h-2 rounded-full bg-[#34A853]" />
+                      <span className="text-sm text-[#1C1E21]">{food.name}</span>
                       <span className="text-xs text-gray-500">
                         {Math.round(food.confidence * 100)}%
                       </span>
                     </div>
-                    <span className="text-sm font-medium text-gray-300">
+                    <span className="text-sm font-medium text-[#1C1E21]">
                       {food.calories} cal
                     </span>
                   </li>
                 ))}
               </ul>
-              <div className="mt-3 pt-3 border-t border-gray-800 flex justify-between">
-                <span className="text-sm font-semibold text-white">Total</span>
-                <span className="text-sm font-bold text-green-400">
+              <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between">
+                <span className="text-sm font-semibold text-[#1C1E21]">Total</span>
+                <span className="text-sm font-semibold text-[#34A853]">
                   {result.totalCalories} cal
                 </span>
               </div>
             </div>
 
             {/* Macro breakdown */}
-            <div className="rounded-xl bg-gray-900 border border-gray-800 p-4">
-              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
+            <div className="rounded-lg bg-white border border-gray-200 p-4 shadow-sm">
+              <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
                 Macro Breakdown
               </h2>
               <div className="space-y-3">
                 {/* Protein */}
                 <div>
                   <div className="flex justify-between text-xs mb-1">
-                    <span className="text-blue-400 font-medium">Protein</span>
-                    <span className="text-gray-400">
+                    <span className="text-[#5B8DEF] font-medium">Protein</span>
+                    <span className="text-gray-500">
                       {result.macros.protein}g
                       {totalMacroGrams > 0 &&
                         ` (${Math.round((result.macros.protein / totalMacroGrams) * 100)}%)`}
                     </span>
                   </div>
-                  <div className="h-2.5 rounded-full bg-gray-800 overflow-hidden">
+                  <div className="h-2.5 rounded-full bg-gray-100 overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-blue-500 transition-all duration-700"
+                      className="h-full rounded-full bg-[#5B8DEF] transition-all duration-700"
                       style={{
                         width: totalMacroGrams > 0
                           ? `${(result.macros.protein / totalMacroGrams) * 100}%`
@@ -397,16 +384,16 @@ export default function NutritionAssistantPage() {
                 {/* Carbs */}
                 <div>
                   <div className="flex justify-between text-xs mb-1">
-                    <span className="text-yellow-400 font-medium">Carbs</span>
-                    <span className="text-gray-400">
+                    <span className="text-[#F2A735] font-medium">Carbs</span>
+                    <span className="text-gray-500">
                       {result.macros.carbs}g
                       {totalMacroGrams > 0 &&
                         ` (${Math.round((result.macros.carbs / totalMacroGrams) * 100)}%)`}
                     </span>
                   </div>
-                  <div className="h-2.5 rounded-full bg-gray-800 overflow-hidden">
+                  <div className="h-2.5 rounded-full bg-gray-100 overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-yellow-500 transition-all duration-700"
+                      className="h-full rounded-full bg-[#F2A735] transition-all duration-700"
                       style={{
                         width: totalMacroGrams > 0
                           ? `${(result.macros.carbs / totalMacroGrams) * 100}%`
@@ -418,16 +405,16 @@ export default function NutritionAssistantPage() {
                 {/* Fat */}
                 <div>
                   <div className="flex justify-between text-xs mb-1">
-                    <span className="text-red-400 font-medium">Fat</span>
-                    <span className="text-gray-400">
+                    <span className="text-[#EF7B6C] font-medium">Fat</span>
+                    <span className="text-gray-500">
                       {result.macros.fat}g
                       {totalMacroGrams > 0 &&
                         ` (${Math.round((result.macros.fat / totalMacroGrams) * 100)}%)`}
                     </span>
                   </div>
-                  <div className="h-2.5 rounded-full bg-gray-800 overflow-hidden">
+                  <div className="h-2.5 rounded-full bg-gray-100 overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-red-500 transition-all duration-700"
+                      className="h-full rounded-full bg-[#EF7B6C] transition-all duration-700"
                       style={{
                         width: totalMacroGrams > 0
                           ? `${(result.macros.fat / totalMacroGrams) * 100}%`
@@ -441,18 +428,18 @@ export default function NutritionAssistantPage() {
 
             {/* Recommendation */}
             <div
-              className={`rounded-xl border p-4 ${
+              className={`rounded-lg border p-4 ${
                 result.shouldEat
-                  ? "bg-green-500/5 border-green-500/30"
-                  : "bg-red-500/5 border-red-500/30"
+                  ? "bg-[#F0FAF0] border-[#C3E6C3]"
+                  : "bg-[#FEF2F2] border-red-200"
               }`}
             >
               <div className="flex items-center gap-2 mb-2">
                 <span
                   className={`inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${
                     result.shouldEat
-                      ? "bg-green-500/20 text-green-400"
-                      : "bg-red-500/20 text-red-400"
+                      ? "bg-[#D4EDDA] text-[#155724]"
+                      : "bg-[#F8D7DA] text-[#721C24]"
                   }`}
                 >
                   {result.shouldEat ? (
@@ -472,7 +459,7 @@ export default function NutritionAssistantPage() {
                   )}
                 </span>
               </div>
-              <p className="text-sm text-gray-300 leading-relaxed">
+              <p className="text-sm text-gray-600 leading-relaxed">
                 {result.recommendation}
               </p>
 
@@ -483,8 +470,8 @@ export default function NutritionAssistantPage() {
                 disabled={speaking}
                 className={`mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   speaking
-                    ? "bg-gray-800 text-gray-500 cursor-not-allowed"
-                    : "bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white"
+                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : "bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-[#1C1E21]"
                 }`}
               >
                 {speaking ? (
