@@ -6,6 +6,28 @@ import { useState, useRef, useCallback, useEffect } from "react";
 
 type Screen = "setup" | "recording" | "review" | "metadata";
 
+type StyleVariantKey = "classic" | "neon" | "minimal" | "retro" | "pastel";
+
+const STYLE_VARIANTS: Record<
+  StyleVariantKey,
+  { accent: string; pipBorder: string; pipWidth: number; overlay: string; label: string }
+> = {
+  classic: { accent: "#E11D48", pipBorder: "#FFFFFF", pipWidth: 3, overlay: "rgba(0,0,0,0.5)", label: "Classic" },
+  neon: { accent: "#00FF88", pipBorder: "#00FF88", pipWidth: 2, overlay: "rgba(0,40,20,0.6)", label: "Neon" },
+  minimal: { accent: "#1A1D23", pipBorder: "rgba(255,255,255,0.3)", pipWidth: 1, overlay: "rgba(0,0,0,0.3)", label: "Minimal" },
+  retro: { accent: "#FF6B35", pipBorder: "#FFFFFF", pipWidth: 6, overlay: "rgba(60,30,0,0.5)", label: "Retro" },
+  pastel: { accent: "#C084FC", pipBorder: "#FFFFFF", pipWidth: 4, overlay: "rgba(80,0,80,0.3)", label: "Pastel" },
+};
+
+const PLATFORMS = [
+  { key: "instagram", label: "Instagram", icon: "IG" },
+  { key: "tiktok", label: "TikTok", icon: "TT" },
+  { key: "youtube", label: "YouTube", icon: "YT" },
+  { key: "rednote", label: "RedNote", icon: "小红书" },
+  { key: "x", label: "X", icon: "𝕏" },
+  { key: "linkedin", label: "LinkedIn", icon: "in" },
+] as const;
+
 const TAGS = [
   "vlog",
   "tutorial",
@@ -51,11 +73,15 @@ function formatTime(seconds: number): string {
 
 function SetupScreen({
   onCameraReady,
+  styleVariant,
+  onStyleChange,
 }: {
   onCameraReady: (
     backStream: MediaStream,
     frontStream: MediaStream | null
   ) => void;
+  styleVariant: StyleVariantKey;
+  onStyleChange: (v: StyleVariantKey) => void;
 }) {
   const [checking, setChecking] = useState(true);
   const [supported, setSupported] = useState(false);
@@ -195,6 +221,50 @@ function SetupScreen({
           </div>
         </div>
 
+        {/* Style variant selector */}
+        <div
+          className="rounded-2xl border p-5 mb-6"
+          style={{ background: "#FFFFFF", borderColor: "#E5E7EB" }}
+        >
+          <label
+            className="block text-xs font-medium mb-3 uppercase tracking-wider"
+            style={{ color: "#6B7280" }}
+          >
+            Recording Style
+          </label>
+          <div className="flex items-center gap-3">
+            {(Object.keys(STYLE_VARIANTS) as StyleVariantKey[]).map((key) => {
+              const v = STYLE_VARIANTS[key];
+              const isSelected = styleVariant === key;
+              return (
+                <button
+                  key={key}
+                  onClick={() => onStyleChange(key)}
+                  className="flex flex-col items-center gap-1.5"
+                >
+                  <div
+                    className="rounded-full"
+                    style={{
+                      width: 28,
+                      height: 28,
+                      background: v.accent,
+                      boxShadow: isSelected
+                        ? `0 0 0 3px #F5F5F0, 0 0 0 5px ${v.accent}`
+                        : "none",
+                    }}
+                  />
+                  <span
+                    className="text-[10px] font-medium"
+                    style={{ color: isSelected ? "#1A1D23" : "#9CA3AF" }}
+                  >
+                    {v.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         {!supported ? (
           <div
             className="rounded-2xl border p-6"
@@ -317,12 +387,15 @@ function RecordingScreen({
   frontStream,
   onRecordingComplete,
   onBack,
+  styleVariant,
 }: {
   backStream: MediaStream;
   frontStream: MediaStream | null;
   onRecordingComplete: (blob: Blob) => void;
   onBack: () => void;
+  styleVariant: StyleVariantKey;
 }) {
+  const variantStyle = STYLE_VARIANTS[styleVariant];
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const backVideoRef = useRef<HTMLVideoElement>(null);
   const frontVideoRef = useRef<HTMLVideoElement>(null);
@@ -402,7 +475,7 @@ function RecordingScreen({
         );
         const pipX = pipPosRef.current.x;
         const pipY = pipPosRef.current.y;
-        const radius = 16;
+        const radius = styleVariant === "retro" ? 20 : styleVariant === "minimal" ? 8 : 16;
 
         ctx.save();
 
@@ -424,10 +497,18 @@ function RecordingScreen({
         ctx.quadraticCurveTo(pipX, pipY, pipX + radius, pipY);
         ctx.closePath();
 
-        // White border
-        ctx.strokeStyle = "#FFFFFF";
-        ctx.lineWidth = 3;
+        // PiP border (variant-aware)
+        ctx.strokeStyle = variantStyle.pipBorder;
+        ctx.lineWidth = variantStyle.pipWidth;
         ctx.stroke();
+        // Neon glow effect
+        if (styleVariant === "neon") {
+          ctx.shadowColor = variantStyle.pipBorder;
+          ctx.shadowBlur = 12;
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+          ctx.shadowColor = "transparent";
+        }
         ctx.clip();
 
         // Flip horizontally for mirror effect
@@ -447,7 +528,7 @@ function RecordingScreen({
       cancelAnimationFrame(rafRef.current);
       backVideo.removeEventListener("loadedmetadata", handleMetadata);
     };
-  }, [backStream, frontStream, singleCameraMode, faceCamHidden]);
+  }, [backStream, frontStream, singleCameraMode, faceCamHidden, styleVariant, variantStyle]);
 
   // PiP drag handling
   const handlePointerDown = useCallback(
@@ -633,7 +714,7 @@ function RecordingScreen({
       {/* Top bar */}
       <div
         className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-3"
-        style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.5), transparent)" }}
+        style={{ background: `linear-gradient(to bottom, ${variantStyle.overlay}, transparent)` }}
       >
         <button
           onClick={onBack}
@@ -648,13 +729,13 @@ function RecordingScreen({
               <span
                 className="w-2.5 h-2.5 rounded-full"
                 style={{
-                  background: "#E11D48",
+                  background: variantStyle.accent,
                   animation: "dualshot-pulse 1.2s ease-in-out infinite",
                 }}
               />
               <span
                 className="text-xs font-semibold"
-                style={{ color: "#E11D48" }}
+                style={{ color: variantStyle.accent }}
               >
                 REC
               </span>
@@ -713,7 +794,7 @@ function RecordingScreen({
       {/* Bottom controls */}
       <div
         className="absolute bottom-0 left-0 right-0 z-10 flex items-center justify-center gap-8 pb-10 pt-6"
-        style={{ background: "linear-gradient(to top, rgba(0,0,0,0.5), transparent)" }}
+        style={{ background: `linear-gradient(to top, ${variantStyle.overlay}, transparent)` }}
       >
         {/* Pause button */}
         {recording && (
@@ -754,7 +835,7 @@ function RecordingScreen({
             height: 72,
             borderRadius: "50%",
             border: recording ? "none" : "4px solid #FFFFFF",
-            background: "#E11D48",
+            background: variantStyle.accent,
           }}
         >
           {recording ? (
@@ -772,7 +853,7 @@ function RecordingScreen({
                 width: 56,
                 height: 56,
                 borderRadius: "50%",
-                background: "#E11D48",
+                background: variantStyle.accent,
               }}
             />
           )}
@@ -874,11 +955,13 @@ function MetadataScreen({
 }) {
   const [description, setDescription] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedPlatform, setSelectedPlatform] = useState<string>("instagram");
   const [generating, setGenerating] = useState(false);
   const [genError, setGenError] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [genDescription, setGenDescription] = useState("");
   const [hasGenerated, setHasGenerated] = useState(false);
+  const [regenerateComment, setRegenerateComment] = useState("");
 
   const toggleTag = useCallback((tag: string) => {
     setSelectedTags((prev) => {
@@ -899,6 +982,8 @@ function MetadataScreen({
         body: JSON.stringify({
           description: description.trim(),
           tags: selectedTags,
+          platform: selectedPlatform,
+          comment: regenerateComment.trim() || undefined,
         }),
       });
       if (!res.ok) throw new Error("Failed to generate");
@@ -906,12 +991,13 @@ function MetadataScreen({
       setTitle(data.title || "");
       setGenDescription(data.description || "");
       setHasGenerated(true);
+      setRegenerateComment("");
     } catch {
       setGenError("AI generation failed. You can type your title and description manually.");
     } finally {
       setGenerating(false);
     }
-  }, [description, selectedTags]);
+  }, [description, selectedTags, selectedPlatform, regenerateComment]);
 
   const handleDownload = useCallback(() => {
     const filename = title.trim()
@@ -972,6 +1058,39 @@ function MetadataScreen({
           />
         </div>
 
+        {/* Platform selector */}
+        <div
+          className="rounded-2xl border p-5"
+          style={{ background: "#FFFFFF", borderColor: "#E5E7EB" }}
+        >
+          <label
+            className="block text-xs font-medium mb-2 uppercase tracking-wider"
+            style={{ color: "#6B7280" }}
+          >
+            Platform
+          </label>
+          <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+            {PLATFORMS.map((p) => {
+              const isSelected = selectedPlatform === p.key;
+              return (
+                <button
+                  key={p.key}
+                  onClick={() => setSelectedPlatform(p.key)}
+                  className="flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors shrink-0"
+                  style={{
+                    borderColor: isSelected ? "#E11D48" : "#E5E7EB",
+                    background: isSelected ? "#FFF1F2" : "#FFFFFF",
+                    color: isSelected ? "#E11D48" : "#6B7280",
+                  }}
+                >
+                  <span className="text-xs font-bold">{p.icon}</span>
+                  {p.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Tags */}
         <div
           className="rounded-2xl border p-5"
@@ -1003,63 +1122,6 @@ function MetadataScreen({
             })}
           </div>
         </div>
-
-        {/* Generate button */}
-        <button
-          onClick={generate}
-          disabled={!description.trim() || generating}
-          className="w-full rounded-xl py-3 text-sm font-semibold transition-colors"
-          style={{
-            background:
-              description.trim() && !generating ? "#E11D48" : "#FDA4AF",
-            color: "#FFFFFF",
-            cursor:
-              description.trim() && !generating ? "pointer" : "not-allowed",
-          }}
-        >
-          {generating ? (
-            <span className="inline-flex items-center gap-2">
-              <svg
-                className="animate-spin h-4 w-4"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                  fill="none"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                />
-              </svg>
-              Generating...
-            </span>
-          ) : hasGenerated ? (
-            "Regenerate"
-          ) : (
-            "Generate Title & Description"
-          )}
-        </button>
-
-        {/* Error */}
-        {genError && (
-          <div
-            className="rounded-lg p-3 text-sm"
-            style={{
-              background: "#FEF2F2",
-              color: "#DC2626",
-              border: "1px solid #FECACA",
-            }}
-          >
-            {genError}
-          </div>
-        )}
 
         {/* Generated fields */}
         {hasGenerated && (
@@ -1108,6 +1170,90 @@ function MetadataScreen({
           </div>
         )}
 
+        {/* Regeneration comment */}
+        {hasGenerated && (
+          <div
+            className="rounded-2xl border p-5"
+            style={{ background: "#FFFFFF", borderColor: "#E5E7EB" }}
+          >
+            <label
+              className="block text-xs font-medium mb-2 uppercase tracking-wider"
+              style={{ color: "#6B7280" }}
+            >
+              Feedback for regeneration
+            </label>
+            <textarea
+              value={regenerateComment}
+              onChange={(e) => setRegenerateComment(e.target.value)}
+              placeholder="Make it more professional..."
+              rows={2}
+              className="w-full rounded-lg border px-3 py-2.5 text-sm focus:outline-none resize-none"
+              style={{
+                borderColor: "#E5E7EB",
+                color: "#1A1D23",
+                background: "#FFFFFF",
+              }}
+            />
+          </div>
+        )}
+
+        {/* Generate button */}
+        <button
+          onClick={generate}
+          disabled={!description.trim() || generating}
+          className="w-full rounded-xl py-3 text-sm font-semibold transition-colors"
+          style={{
+            background:
+              description.trim() && !generating ? "#E11D48" : "#FDA4AF",
+            color: "#FFFFFF",
+            cursor:
+              description.trim() && !generating ? "pointer" : "not-allowed",
+          }}
+        >
+          {generating ? (
+            <span className="inline-flex items-center gap-2">
+              <svg
+                className="animate-spin h-4 w-4"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                />
+              </svg>
+              Generating...
+            </span>
+          ) : hasGenerated ? (
+            "Regenerate with feedback"
+          ) : (
+            "Generate Title & Description"
+          )}
+        </button>
+
+        {/* Error */}
+        {genError && (
+          <div
+            className="rounded-lg p-3 text-sm"
+            style={{
+              background: "#FEF2F2",
+              color: "#DC2626",
+              border: "1px solid #FECACA",
+            }}
+          >
+            {genError}
+          </div>
+        )}
+
         {/* Download */}
         <button
           onClick={handleDownload}
@@ -1141,6 +1287,7 @@ export default function DualShotPage() {
   const [backStream, setBackStream] = useState<MediaStream | null>(null);
   const [frontStream, setFrontStream] = useState<MediaStream | null>(null);
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
+  const [styleVariant, setStyleVariant] = useState<StyleVariantKey>("classic");
 
   // Cleanup all streams on unmount
   useEffect(() => {
@@ -1190,6 +1337,7 @@ export default function DualShotPage() {
           stopAllStreams();
           setScreen("setup");
         }}
+        styleVariant={styleVariant}
       />
     );
   }
@@ -1213,5 +1361,11 @@ export default function DualShotPage() {
     );
   }
 
-  return <SetupScreen onCameraReady={handleCameraReady} />;
+  return (
+    <SetupScreen
+      onCameraReady={handleCameraReady}
+      styleVariant={styleVariant}
+      onStyleChange={setStyleVariant}
+    />
+  );
 }
