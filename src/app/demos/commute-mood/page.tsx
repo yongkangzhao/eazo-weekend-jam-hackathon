@@ -131,6 +131,17 @@ const MOOD_ROTATIONS: Record<string, number> = {
 
 /* ─── Select Screen ────────────────────────────────────────────────── */
 
+function prewarmVibeImages() {
+  for (const m of MOODS) {
+    const dist = Object.fromEntries(MOODS.map((x) => [x.key, x.key === m.key ? 100 : 0]));
+    fetch("/api/commute-mood/vibe-image", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mood: m.key, distribution: dist }),
+    }).catch(() => {/* fire-and-forget */});
+  }
+}
+
 function SelectScreen({
   onBoard,
 }: {
@@ -139,6 +150,9 @@ function SelectScreen({
   const [line, setLine] = useState("");
   const [station, setStation] = useState("");
   const [direction, setDirection] = useState("Inbound");
+
+  // Kick off background image generation for all moods while user picks their train
+  useEffect(() => { prewarmVibeImages(); }, []);
 
   const stations = line ? LINES[line].stations : [];
 
@@ -432,6 +446,7 @@ function RoomScreen({
 
   const userId = useRef(crypto.randomUUID());
   const username = useRef(`Rider ${Math.floor(Math.random() * 900) + 100}`);
+  const prefetchedImages = useRef<Map<MoodKey, string>>(new Map());
 
   const [simulatedRiders, setSimulatedRiders] = useState<Rider[]>(() => generateRiders(15, 0));
   const [realRiders, setRealRiders] = useState<Rider[]>([]);
@@ -500,6 +515,23 @@ function RoomScreen({
       channelRef.current = null;
     };
   }, [lineKey, direction]);
+
+  // Prefetch all mood images into memory on mount (uses Supabase cache, ~100ms per mood after first generation)
+  useEffect(() => {
+    for (const m of MOODS) {
+      const dist = Object.fromEntries(MOODS.map((x) => [x.key, x.key === m.key ? 100 : 0]));
+      fetch("/api/commute-mood/vibe-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mood: m.key, distribution: dist }),
+      })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (data?.imageUrl) prefetchedImages.current.set(m.key, data.imageUrl);
+        })
+        .catch(() => {/* ignore */});
+    }
+  }, []);
 
   // Auto-scroll chat
   useEffect(() => {
@@ -573,6 +605,14 @@ function RoomScreen({
   // Fetch vibe image when mood is selected
   const fetchVibeImage = useCallback(async () => {
     if (!selectedMood) return;
+
+    // Serve from in-memory prefetch if already resolved (instant)
+    const prefetched = prefetchedImages.current.get(selectedMood);
+    if (prefetched) {
+      setVibeImageUrl(prefetched);
+      return;
+    }
+
     setVibeImageLoading(true);
     setVibeImageError(null);
     try {

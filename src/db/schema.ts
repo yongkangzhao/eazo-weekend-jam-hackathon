@@ -35,3 +35,10 @@ export const messages = pgTable("messages", {
   text: text("text").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
+
+/** Vibe image cache: one pre-generated image per mood key */
+export const vibeImageCache = pgTable("vibe_image_cache", {
+  mood: text("mood").primaryKey(),
+  imageUrl: text("image_url").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});

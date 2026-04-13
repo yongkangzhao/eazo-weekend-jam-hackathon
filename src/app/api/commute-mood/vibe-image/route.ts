@@ -1,7 +1,8 @@
 import { textToImage } from "@/lib/minimax";
+import { getServiceClient } from "@/lib/supabase";
 import { NextRequest, NextResponse } from "next/server";
 
-const moodPrompts: Record<string, string> = {
+const MOOD_PROMPTS: Record<string, string> = {
   "Dead Tired":
     "A quiet early morning commute scene, soft foggy cityscape through train windows, muted pastel colors, people resting with eyes closed on a gentle train ride, peaceful sleepy atmosphere, warm soft lighting, watercolor illustration style",
   "Just Woke Up":
@@ -18,8 +19,7 @@ const moodPrompts: Record<string, string> = {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { mood, distribution } = body;
+    const { mood, distribution } = await request.json();
 
     if (!mood || !distribution) {
       return NextResponse.json(
@@ -28,14 +28,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find dominant mood from distribution
-    const dominantMood = Object.entries(
-      distribution as Record<string, number>
-    ).reduce((a, b) => (b[1] > a[1] ? b : a))[0];
+    // Pick the dominant mood as the image theme
+    const dominantMood = Object.entries(distribution as Record<string, number>)
+      .reduce((a, b) => (b[1] > a[1] ? b : a))[0];
+    const moodKey = MOOD_PROMPTS[dominantMood] ? dominantMood : mood;
 
+    // ── Cache check ──────────────────────────────────────────────────
+    const supabase = getServiceClient();
+    const { data: cached } = await supabase
+      .from("vibe_image_cache")
+      .select("image_url")
+      .eq("mood", moodKey)
+      .single();
+
+    if (cached?.image_url) {
+      return NextResponse.json({ imageUrl: cached.image_url, cached: true });
+    }
+
+    // ── Generate (slow path, first time only per mood) ───────────────
     const prompt =
-      moodPrompts[dominantMood] ||
-      moodPrompts[mood] ||
+      MOOD_PROMPTS[moodKey] ??
       "A peaceful morning commute on a city train, warm tones, watercolor illustration style";
 
     const result = await textToImage(prompt);
@@ -48,7 +60,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ imageUrl });
+    // Store in cache (best-effort, don't fail the request if it errors)
+    await supabase
+      .from("vibe_image_cache")
+      .upsert({ mood: moodKey, image_url: imageUrl })
+      .then(({ error }) => {
+        if (error) console.warn("[vibe-image] cache write failed:", error.message);
+      });
+
+    return NextResponse.json({ imageUrl, cached: false });
   } catch (error) {
     console.error("Vibe image generation error:", error);
     return NextResponse.json(
